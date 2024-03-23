@@ -17,4 +17,8 @@ Las características de la aplicación incluyen la creación, actualización y v
 
 Esta innovadora herramienta no solo elimina la dependencia de métodos obsoletos y propensos a errores, sino que también proporciona a los profesionales médicos y administrativos una plataforma confiable y fácil de usar, que también tiene como objetivo mejorar la calidad de la atención a las personas mayores. 
 
-Las siguientes secciones detallan las características clave de Nurse Control, su impacto esperado en las operaciones del hogar de ancianos Esperanza de Santa Ana y el valor que representa Nurse Control tanto para los pacientes como para los proveedores. 
+**FrontEnd: React Native**
+
+**BackEnd: Google Firebase**
+
+**Wireframes: Balsamiq**
