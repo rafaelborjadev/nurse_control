@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -5,21 +6,23 @@ import { Image } from 'expo-image';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { router } from 'expo-router';
+import { auth } from '../lib/firebase';
 
-import logoDark from '../../../assets/logo-title-black.png';
+import logoDark from '../../assets/images/logo-title-black.png';
 
 const schema = yup
   .object({
-    correo: yup
+    email: yup
       .string()
       .email('El correo debe ser un email válido.')
       .required('El correo es requerido.'),
-    pass: yup.string().required('La contraseña es requerida.'),
+    password: yup.string().required('La contraseña es requerida.'),
   })
   .required();
 
-const Login = () => {
+const SignIn = () => {
   const {
     control,
     handleSubmit,
@@ -28,8 +31,27 @@ const Login = () => {
     resolver: yupResolver(schema),
   });
   const [togglePass, setTogglePass] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const onSubmit = (data) => console.log(data);
+  const onSubmit = async ({ email, password }) => {
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      setLoading(false);
+      router.replace('/');
+    } catch (error) {
+      setLoading(false);
+      const errorCode = error.code;
+      if (errorCode === 'auth/invalid-credential') {
+        setError('Credenciales incorrectas, intente de nuevo.');
+      } else {
+        setError(
+          'Ha ocurrido un error al iniciar sesión, por favor intente más tarde.'
+        );
+      }
+    }
+  };
 
   return (
     <View className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 justify-center bg-white">
@@ -52,14 +74,14 @@ const Login = () => {
                 onChangeText={onChange}
                 value={value}
                 mode="outlined"
-                error={errors.correo ? true : false}
+                error={errors.email ? true : false}
               />
             )}
-            name="correo"
+            name="email"
           />
-          {errors.correo && (
+          {errors.email && (
             <Text className="text-red-500 text-xs ml-3">
-              {errors.correo.message}
+              {errors.email.message}
             </Text>
           )}
         </View>
@@ -83,14 +105,14 @@ const Login = () => {
                     onPress={() => setTogglePass((prev) => !prev)}
                   />
                 }
-                error={errors.pass ? true : false}
+                error={errors.password ? true : false}
               />
             )}
-            name="pass"
+            name="password"
           />
-          {errors.pass && (
+          {errors.password && (
             <Text className="text-red-500 text-xs ml-3">
-              {errors.pass.message}
+              {errors.password.message}
             </Text>
           )}
         </View>
@@ -99,12 +121,16 @@ const Login = () => {
           mode="contained"
           icon="account"
           onPress={handleSubmit(onSubmit)}
+          disabled={loading}
         >
           Iniciar Sesión
         </Button>
+        {error && (
+          <Text className="text-red-500 text-sm text-center mt-4">{error}</Text>
+        )}
       </SafeAreaView>
     </View>
   );
 };
 
-export default Login;
+export default SignIn;
