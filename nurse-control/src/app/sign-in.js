@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -108,12 +108,6 @@ const SignIn = () => {
       }
     }
   };
-
-  useEffect(() => {
-    GoogleSignin.configure({
-      webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
-    });
-  }, []);
 
   return (
     <View className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 justify-center bg-white">
