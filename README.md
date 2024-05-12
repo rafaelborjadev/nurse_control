@@ -3,6 +3,12 @@ App dedicada al control de registros especializado de asilos para personas mayor
 
 Tablero de trabajo: https://trello.com/invite/b/EbLi6EtN/ATTIf042deac82a5d673e00b01b8e5b8665e2164534E/nurse-control
 
+Link de la defensa de fase 2: [DPS Fase 2](https://youtu.be/Aii_0vHDH_A)
+
+## Manuales
+- [Manual de usuario](https://github.com/rafaelborjadev/nurse_control/blob/main/DPS%20Nurse%20Control%20manual%20de%20usuario.pdf)
+- [Manual técnico](https://github.com/rafaelborjadev/nurse_control/blob/main/DPS%20Nurse%20Control%20manual%20t%C3%A9cnico.pdf)
+
 La gestión eficaz y el seguimiento cuidadoso de la información sobre la salud y el bienestar de los residentes es la piedra angular de la gestión de residencias de ancianos. 
 
 El hogar de ancianos Esperanza de Santa Ana enfrentó grandes desafíos en el manejo de la información porque utilizaba un sistema basado en hojas de cálculo Excel para registrar pacientes, médicos y citas. 
