@@ -23,6 +23,7 @@ export default function AppLayout() {
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="paciente/[id]"  options={{ headerShown: true,  title: 'Agregar un paciente', }} />
+      <Stack.Screen name="usuario/[id]"  options={{ headerShown: true,  title: 'Agregar un usuario', }} />
     </Stack>
   );
 }
