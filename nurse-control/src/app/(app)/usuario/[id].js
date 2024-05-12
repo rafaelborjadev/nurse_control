@@ -13,7 +13,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { DatePickerInput } from 'react-native-paper-dates';
 import { db } from '../../../lib/firebase';
-import { doc, getDoc, updateDoc, addDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, addDoc, collection } from 'firebase/firestore';
 import { router, useLocalSearchParams } from 'expo-router';
 import moment from 'moment';
 import * as yup from 'yup';
