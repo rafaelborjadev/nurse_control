@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Text, View, Alert } from 'react-native';
+import { Text, View, Alert, ScrollView } from 'react-native';
 import { TextInput, Button, RadioButton, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
@@ -129,7 +129,7 @@ const AddPaciente = () => {
   };
 
   return (
-    <View className="flex-1 px-4 sm:px-6 lg:px-8 bg-white">
+    <ScrollView className="flex-1 px-4 sm:px-6 lg:px-8 bg-white">
       <SafeAreaView>
         <View className="mt-8 mb-4">
           <Controller
@@ -270,7 +270,7 @@ const AddPaciente = () => {
           <Text className="text-red-500 text-sm text-center mt-4">{error}</Text>
         )}
       </SafeAreaView>
-    </View>
+    </ScrollView>
   );
 };
 
