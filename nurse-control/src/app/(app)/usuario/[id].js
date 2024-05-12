@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Text, View, Alert, ScrollView } from 'react-native';
 import {
   TextInput,
@@ -11,12 +11,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
 import { DatePickerInput } from 'react-native-paper-dates';
 import { db } from '../../../lib/firebase';
-import { collection, addDoc } from 'firebase/firestore';
-import { router } from 'expo-router';
+import { doc, getDoc, updateDoc, addDoc } from 'firebase/firestore';
+import { router, useLocalSearchParams } from 'expo-router';
 import moment from 'moment';
+import * as yup from 'yup';
 
 const schema = yup
   .object({
@@ -28,7 +28,6 @@ const schema = yup
       .required('El correo es requerido.'),
     fecha_nacimiento: yup
       .date()
-      .max(new Date(), 'La fecha de nacimiento no puede ser en el futuro.')
       .required('La fecha de nacimiento es requerida.'),
     genero: yup.string().required('El género es requerido.'),
     password: yup.string().required('La contraseña es requerida.'),
@@ -37,14 +36,17 @@ const schema = yup
   })
   .required();
 
-const AddUsuario = () => {
+const UsuarioForm = () => {
   const [loading, setLoading] = useState(false);
   const [visible, setVisible] = useState(false);
+  const { id } = useLocalSearchParams();
+  const isUpdatingUser = id && id !== '[id]';
 
   const {
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -55,34 +57,65 @@ const AddUsuario = () => {
       fecha_nacimiento: new Date(),
       genero: 'Masculino',
       password: '',
-      rol: 'Doctor', // Default to Doctor
+      rol: 'Doctor',
       telefono: '',
     },
   });
 
-  const openMenu = () => setVisible(true);
-  const closeMenu = () => setVisible(false);
+  useEffect(() => {
+    if (isUpdatingUser) {
+      const fetchUserData = async () => {
+        const docRef = doc(db, 'usuarios', id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          userData.fecha_nacimiento = userData.fecha_nacimiento.toDate();
+          reset({ ...userData });
+        } else {
+          Alert.alert('Error', 'Usuario no encontrado');
+        }
+      };
+
+      fetchUserData();
+    }
+  }, [id, isUpdatingUser, reset]);
 
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const res = await addDoc(collection(db, 'usuarios'), {
-        ...data,
-        fecha_nacimiento: moment(data.fecha_nacimiento).toDate(),
-      });
-      if (res.id) {
+      if (isUpdatingUser) {
+        const userRef = doc(db, 'usuarios', id);
+        await updateDoc(userRef, {
+          ...data,
+          fecha_nacimiento: moment(data.fecha_nacimiento).toDate(),
+        });
         Alert.alert(
-          'Usuario agregado con éxito',
-          'El usuario ha sido registrado con éxito.',
+          'Usuario modificado con éxito',
+          'El usuario ha sido actualizado con éxito.',
           [{ text: 'OK', onPress: () => router.navigate('/usuarios') }]
         );
+      } else {
+        const res = await addDoc(collection(db, 'usuarios'), {
+          ...data,
+          fecha_nacimiento: moment(data.fecha_nacimiento).toDate(),
+        });
+        if (res.id) {
+          Alert.alert(
+            'Usuario agregado con éxito',
+            'El usuario ha sido registrado con éxito.',
+            [{ text: 'OK', onPress: () => router.navigate('/usuarios') }]
+          );
+        }
       }
     } catch (error) {
-      console.error('Error al agregar el usuario:', error);
-      Alert.alert('Error', 'No se pudo registrar el usuario.');
+      console.error('Error al procesar el usuario:', error);
+      Alert.alert('Error', 'No se pudo procesar el usuario.');
     }
     setLoading(false);
   };
+
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
 
   return (
     <Provider>
@@ -265,14 +298,13 @@ const AddUsuario = () => {
                 <Text className="text-red-500">{errors.telefono.message}</Text>
               )}
             </View>
-
             <Button
               mode="contained"
               onPress={handleSubmit(onSubmit)}
               disabled={loading}
               loading={loading}
             >
-              Agregar usuario
+              {isUpdatingUser ? 'Actualizar Usuario' : 'Agregar Usuario'}
             </Button>
           </SafeAreaView>
         </ScrollView>
@@ -281,4 +313,4 @@ const AddUsuario = () => {
   );
 };
 
-export default AddUsuario;
+export default UsuarioForm;
