@@ -1,13 +1,6 @@
 import { View, Text } from 'react-native';
 import { Card, useTheme, Button } from 'react-native-paper';
 
-/**
- *
- * @param { header: { name, label }, body: [ { name, label } ]} keys
- * @param {[]} data
- * @param {[{ buttonText, icon, className, styles, action }]} buttons
- * @returns
- */
 const Cards = ({ keys, data, buttons }) => {
   const theme = useTheme();
 
@@ -21,13 +14,20 @@ const Cards = ({ keys, data, buttons }) => {
             style={{
               borderColor: 'transparent',
               backgroundColor: theme.colors.primaryContainer,
+              marginBottom: 10,
             }}
           />
           {keys.body.map((subEl, j) => (
-            <Card.Content key={i + j}>
-              <Text variant="bodyMedium">{`${subEl.label}${
-                el[subEl.name]
-              }`}</Text>
+            <Card.Content key={i + j} style={{ margin: 1 }}>
+              {subEl?.name === 'rol' ? (
+                <Text variant="bodyMedium" style={{ fontWeight: 800 }}>{`${
+                  el[subEl.name]
+                }`}</Text>
+              ) : (
+                <Text variant="bodyMedium">{`${subEl.label}${
+                  el[subEl.name]
+                }`}</Text>
+              )}
             </Card.Content>
           ))}
           <Card.Actions>
