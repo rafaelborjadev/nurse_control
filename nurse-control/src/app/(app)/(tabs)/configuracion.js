@@ -27,7 +27,9 @@ export default function Configuracion() {
         <View>
           <View className="flex flex-row mb-4">
             <Text className="font-bold text-base">Nombre: </Text>
-            <Text className="text-base">{user.displayName || user.email}</Text>
+            <Text className="text-base">
+              {user.displayName || `${user.nombres} ${user.apellidos}`}
+            </Text>
           </View>
           <View className="flex flex-row mb-4">
             <Text className="font-bold text-base">Correo: </Text>
