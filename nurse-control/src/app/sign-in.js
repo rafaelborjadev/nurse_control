@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
-import { TextInput, Button } from 'react-native-paper';
+import { TextInput, Button, Portal, Modal } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import {
   GoogleSignin,
   statusCodes,
@@ -38,6 +38,10 @@ const SignIn = () => {
   const [togglePass, setTogglePass] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [visible, setVisible] = useState(false);
+  const { error: paramError } = useLocalSearchParams();
+
+  const hideModal = () => setVisible(false);
 
   const onSubmit = async ({ email, password }) => {
     setLoading(true);
@@ -108,6 +112,18 @@ const SignIn = () => {
       }
     }
   };
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (paramError && mounted) {
+      setVisible(true);
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, [paramError]);
 
   return (
     <View className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 justify-center bg-white">
@@ -206,6 +222,24 @@ const SignIn = () => {
             </Button>
           </View>
         </View>
+        <Portal>
+          <Modal
+            visible={visible}
+            onDismiss={hideModal}
+            contentContainerStyle={{
+              backgroundColor: 'white',
+              padding: 20,
+              maxWidth: '90%',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+            }}
+          >
+            <Text className="text-red-500 font-bold text-center text-xl">
+              Error.
+            </Text>
+            <Text>{paramError}</Text>
+          </Modal>
+        </Portal>
       </SafeAreaView>
     </View>
   );
