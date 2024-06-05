@@ -22,6 +22,7 @@ export default function AppLayout() {
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="cita/[...slug]"  options={{ headerShown: true,  title: 'Detalle de cita', }} />
       <Stack.Screen name="paciente/[id]"  options={{ headerShown: true,  title: 'Agregar un paciente', }} />
       <Stack.Screen name="usuario/[id]"  options={{ headerShown: true,  title: 'Agregar un usuario', }} />
     </Stack>
