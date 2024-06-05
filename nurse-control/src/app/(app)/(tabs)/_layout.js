@@ -1,11 +1,19 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { IconButton, useTheme } from 'react-native-paper';
+import useUser from '../../../hooks/useUser';
+import rules, { MODULE_ENUM, ROUTES } from '../../../navigation/rbacRules';
 
 const ICON_SIZE = 30;
+const verifyAuth = (rol, route) => {
+  return rules[rol] && rules[rol][MODULE_ENUM.routes].includes(route)
+    ? route
+    : null;
+};
 
 export default function TabLayout() {
   const theme = useTheme();
+  const [user] = useUser();
 
   return (
     <Tabs screenOptions={{ tabBarActiveTintColor: theme.colors.primary }}>
@@ -29,6 +37,7 @@ export default function TabLayout() {
             />
           ),
           tabBarLabelStyle: { fontSize: 15 },
+          href: verifyAuth(user?.rol, ROUTES.usuarios),
         }}
       />
       <Tabs.Screen
@@ -43,6 +52,7 @@ export default function TabLayout() {
             />
           ),
           tabBarLabelStyle: { fontSize: 15 },
+          href: verifyAuth(user?.rol, ROUTES.pacientes),
         }}
       />
       <Tabs.Screen
@@ -71,6 +81,7 @@ export default function TabLayout() {
             />
           ),
           tabBarLabelStyle: { fontSize: 15 },
+          href: verifyAuth(user?.rol, ROUTES.configuracion),
         }}
       />
     </Tabs>

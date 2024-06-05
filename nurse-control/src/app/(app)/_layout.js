@@ -1,13 +1,18 @@
 import { Redirect, Stack } from 'expo-router';
 import { Text } from 'react-native-paper';
 import useUser from '../../hooks/useUser';
+import { View } from 'react-native';
 
 export default function AppLayout() {
-  const [user, initializing] = useUser();
+  const [user, initializing, error] = useUser();
 
   // You can keep the splash screen open, or render a loading screen like we do here.
   if (initializing) {
-    return <Text>Loading...</Text>;
+    return (
+      <View className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 justify-center">
+        <Text className="text-center">Cargando...</Text>
+      </View>
+    );
   }
 
   // Only require authentication within the (app) group's layout as users
@@ -15,7 +20,14 @@ export default function AppLayout() {
   if (!user) {
     // On web, static rendering will stop here as the user is not authenticated
     // in the headless Node process that the pages are rendered in.
-    return <Redirect href="/sign-in" />;
+    return (
+      <Redirect
+        href={{
+          pathname: '/sign-in',
+          params: { error },
+        }}
+      />
+    );
   }
 
   // This layout can be deferred because it's not the root layout.
