@@ -9,7 +9,7 @@ const Cards = ({ keys, data, buttons }) => {
       {data?.map((el, i) => (
         <Card key={el.id} className="mb-5">
           <Card.Title
-            title={`${keys.header.label}${el[keys.header.name]}`}
+            title={`${keys?.header?.label}${el[keys?.header?.name]}`}
             subtitle=""
             style={{
               borderColor: 'transparent',

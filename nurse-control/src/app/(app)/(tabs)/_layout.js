@@ -56,6 +56,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="citas"
+        options={{
+          title: 'Citas',
+          tabBarIcon: ({ focused, color }) => (
+            <IconButton
+              icon={ focused ? 'clipboard-file' : 'clipboard-file-outline' }
+              size={ICON_SIZE}
+              iconColor={color}
+            />
+          ),
+          tabBarLabelStyle: { fontSize: 15 }
+        }}
+      />
+      <Tabs.Screen
         name="configuracion"
         options={{
           title: 'Cuenta',
