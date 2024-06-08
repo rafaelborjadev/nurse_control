@@ -14,7 +14,16 @@ import { DatePickerInput, tr } from 'react-native-paper-dates';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
 import { db } from '../../../lib/firebase';
-import { collection, addDoc, getDoc, doc, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  getDoc,
+  doc,
+  query,
+  where,
+  updateDoc,
+} from 'firebase/firestore';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as yup from 'yup';
@@ -63,6 +72,24 @@ const DetalleCita = () => {
           fecha: new Date(data.fecha),
           notas: data.notas.replaceAll('\\n', '\n'),
         });
+      } else if (action === 'create') {
+        const doctoresSnapshots = await getDocs(
+          query(collection(db, 'usuarios'), where('rol', '==', 'Doctor'))
+        );
+        const doctores = doctoresSnapshots.docs.map((doc) => ({
+          id: doc.id,
+          nombres: doc.data().nombres,
+          apellidos: doc.data().apellidos,
+        }));
+        setDoctoresList(doctores);
+
+        const pacientesSnapshots = await getDocs(collection(db, 'pacientes'));
+        const pacientes = pacientesSnapshots.docs.map((doc) => ({
+          id: doc.id,
+          nombres: doc.data().nombres,
+          apellidos: doc.data().apellidos,
+        }));
+        setPacientesList(pacientes);
       }
     };
     init();
@@ -166,7 +193,7 @@ const DetalleCita = () => {
                   name="fecha"
                   render={({ field: { onChange, value } }) => (
                     <DatePickerInput
-                      label="Fecha de Nacimiento"
+                      label="Fecha"
                       value={value}
                       onChange={onChange}
                       locale="es"
@@ -184,13 +211,13 @@ const DetalleCita = () => {
 
           <View className="mb-4">
             <Text>Notas:</Text>
-            {isReadOnly && 
-              <View pointerEvents='none'>
+            {isReadOnly && (
+              <View pointerEvents="none">
                 <TextInput mode="outlined" multiline={true}>
                   {control._formValues.notas}
                 </TextInput>
               </View>
-            }
+            )}
             {!isReadOnly && (
               <View>
                 <Controller

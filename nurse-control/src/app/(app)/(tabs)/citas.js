@@ -39,13 +39,15 @@ export default function Citas() {
         return {
           id: doc.id,
           ...doc.data(),
-          fecha: moment(doc.data().fecha.seconds * 1000).format('DD-MM-YYYY, h:mm a'),
+          fecha: moment(doc.data().fecha.seconds * 1000).format(
+            'DD-MM-YYYY, h:mm a'
+          ),
           nombreDePaciente: `${paciente.nombres} ${paciente.apellidos}`,
           nombreDeDoctor: `${doctor.nombres} ${doctor.apellidos}`,
         };
       })
     );
-    
+
     setData(res);
 
     setLoading(false);
@@ -55,6 +57,10 @@ export default function Citas() {
     getData();
   };
 
+  const createCita = () => {
+    router.navigate(`/cita/create`);
+  };
+
   const editCita = (document) => {
     // TODO: handle navigation to edit screen
     // router.navigate(`/usuario/${document.id}`);
@@ -62,7 +68,7 @@ export default function Citas() {
 
   const showCita = (document) => {
     router.navigate(`/cita/show/${document.id}`);
-  }
+  };
 
   const deleteCita = async (document) => {
     Alert.alert(
@@ -144,7 +150,7 @@ export default function Citas() {
               contentStyle={{
                 backgroundColor: theme.colors.secondaryContainer,
               }}
-              // onPress={handleClick}
+              onPress={createCita}
             >
               Agregar nueva cita
             </Button>
