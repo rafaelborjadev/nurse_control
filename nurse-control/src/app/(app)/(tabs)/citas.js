@@ -62,8 +62,7 @@ export default function Citas() {
   };
 
   const editCita = (document) => {
-    // TODO: handle navigation to edit screen
-    // router.navigate(`/usuario/${document.id}`);
+    router.navigate(`/cita/edit/${document.id}`);
   };
 
   const showCita = (document) => {

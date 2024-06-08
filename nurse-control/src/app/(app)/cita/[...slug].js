@@ -13,6 +13,7 @@ import {
   query,
   where,
   addDoc,
+  updateDoc,
 } from 'firebase/firestore';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -52,36 +53,48 @@ const DetalleCita = () => {
     },
   });
 
+  const getDoctors = async () => {
+    const doctoresSnapshots = await getDocs(
+      query(collection(db, 'usuarios'), where('rol', '==', 'Doctor'))
+    );
+    const doctores = doctoresSnapshots.docs.map((doc) => ({
+      id: doc.id,
+      nombres: doc.data().nombres,
+      apellidos: doc.data().apellidos,
+    }));
+    setDoctoresList(doctores);
+  };
+  const getPacientes = async () => {
+    const pacientesSnapshots = await getDocs(collection(db, 'pacientes'));
+    const pacientes = pacientesSnapshots.docs.map((doc) => ({
+      id: doc.id,
+      nombres: doc.data().nombres,
+      apellidos: doc.data().apellidos,
+    }));
+    setPacientesList(pacientes);
+  };
+
+  const getPacientebyId = async (id) => {
+    const data = await getData(id);
+    setPacientesList([data.paciente]);
+    reset({
+      paciente: data.paciente,
+      doctor: data.doctor,
+      fecha: new Date(data.fecha),
+      notas: data.notas.replaceAll('\\n', '\n'),
+    });
+  };
   useEffect(() => {
     const init = async () => {
-      if (action === 'show') {
-        const data = await getData(id);
-        setDoctoresList([data.doctor]);
-        setPacientesList([data.paciente]);
-        reset({
-          paciente: data.paciente,
-          doctor: data.doctor,
-          fecha: new Date(data.fecha),
-          notas: data.notas.replaceAll('\\n', '\n'),
-        });
+      if (action === 'show' || action === 'edit') {
+        getPacientebyId(id);
+        if (action === 'edit') {
+          getDoctors();
+          getPacientes();
+        }
       } else if (action === 'create') {
-        const doctoresSnapshots = await getDocs(
-          query(collection(db, 'usuarios'), where('rol', '==', 'Doctor'))
-        );
-        const doctores = doctoresSnapshots.docs.map((doc) => ({
-          id: doc.id,
-          nombres: doc.data().nombres,
-          apellidos: doc.data().apellidos,
-        }));
-        setDoctoresList(doctores);
-
-        const pacientesSnapshots = await getDocs(collection(db, 'pacientes'));
-        const pacientes = pacientesSnapshots.docs.map((doc) => ({
-          id: doc.id,
-          nombres: doc.data().nombres,
-          apellidos: doc.data().apellidos,
-        }));
-        setPacientesList(pacientes);
+        getDoctors();
+        getPacientes();
       }
     };
     init();
@@ -117,6 +130,18 @@ const DetalleCita = () => {
 
   const onSubmit = async (data) => {
     try {
+      if (action === 'edit') {
+        await updateDoc(doc(db, 'citas', id), {
+          doctor: doc(db, 'usuarios', data.doctor.id),
+          paciente: doc(db, 'pacientes', data.paciente.id),
+          fecha: data.fecha,
+          notas: data.notas,
+        });
+        Alert.alert('', 'Cita actualizada exitosamente', [
+          { text: 'OK', onPress: () => router.navigate('/citas') },
+        ]);
+        return;
+      }
       await addDoc(collection(db, 'citas'), {
         doctor: doc(db, 'usuarios', data.doctor.id),
         paciente: doc(db, 'pacientes', data.paciente.id),
