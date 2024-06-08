@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, ScrollView } from 'react-native';
+import { Alert, View, ScrollView } from 'react-native';
 import { Text, TextInput, Button, Menu, useTheme } from 'react-native-paper';
 import { DatePickerInput, TimePickerModal } from 'react-native-paper-dates';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,9 +12,10 @@ import {
   doc,
   query,
   where,
+  addDoc,
 } from 'firebase/firestore';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import * as yup from 'yup';
 import moment from 'moment';
 
@@ -112,6 +113,22 @@ const DetalleCita = () => {
     updatedDate.setHours(hours, minutes);
     setValue('fecha', updatedDate);
     onDismissTimePicker();
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      await addDoc(collection(db, 'citas'), {
+        doctor: doc(db, 'usuarios', data.doctor.id),
+        paciente: doc(db, 'pacientes', data.paciente.id),
+        fecha: data.fecha,
+        notas: data.notas,
+      });
+      Alert.alert('', 'Cita guardada exitosamente', [
+        { text: 'OK', onPress: () => router.navigate('/citas') },
+      ]);
+    } catch (error) {
+      Alert.alert('Error al guardar la cita: ' + error.message);
+    }
   };
 
   return (
@@ -266,6 +283,12 @@ const DetalleCita = () => {
               </View>
             )}
           </View>
+
+          {!isReadOnly && (
+            <Button mode="contained" onPress={handleSubmit(onSubmit)}>
+              Guardar Cita
+            </Button>
+          )}
         </View>
       </SafeAreaView>
     </ScrollView>
