@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react';
-import { View, Alert, ScrollView } from 'react-native';
-import {
-  Text,
-  TextInput,
-  Button,
-  RadioButton,
-  useTheme,
-  Provider,
-  Menu,
-  Portal,
-} from 'react-native-paper';
-import { DatePickerInput, tr } from 'react-native-paper-dates';
+import { Alert, View, ScrollView } from 'react-native';
+import { Text, TextInput, Button, Menu, useTheme } from 'react-native-paper';
+import { DatePickerInput, TimePickerModal } from 'react-native-paper-dates';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
 import { db } from '../../../lib/firebase';
-import { collection, addDoc, getDoc, doc, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  getDoc,
+  doc,
+  query,
+  where,
+  addDoc,
+} from 'firebase/firestore';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as yup from 'yup';
@@ -25,11 +24,13 @@ const schema = yup
     fecha: yup.date().required('La fecha de la cita es requerida.'),
   })
   .required();
+
 const DetalleCita = () => {
   const theme = useTheme();
   const { slug } = useLocalSearchParams();
   const [doctorsVisible, setDoctorsVisible] = useState(false);
   const [pacienteVisible, setPacienteVisible] = useState(false);
+  const [timeVisible, setTimeVisible] = useState(false);
   const [action, id] = slug;
   const isReadOnly = action === 'show';
   const [doctoresList, setDoctoresList] = useState([]);
@@ -63,6 +64,24 @@ const DetalleCita = () => {
           fecha: new Date(data.fecha),
           notas: data.notas.replaceAll('\\n', '\n'),
         });
+      } else if (action === 'create') {
+        const doctoresSnapshots = await getDocs(
+          query(collection(db, 'usuarios'), where('rol', '==', 'Doctor'))
+        );
+        const doctores = doctoresSnapshots.docs.map((doc) => ({
+          id: doc.id,
+          nombres: doc.data().nombres,
+          apellidos: doc.data().apellidos,
+        }));
+        setDoctoresList(doctores);
+
+        const pacientesSnapshots = await getDocs(collection(db, 'pacientes'));
+        const pacientes = pacientesSnapshots.docs.map((doc) => ({
+          id: doc.id,
+          nombres: doc.data().nombres,
+          apellidos: doc.data().apellidos,
+        }));
+        setPacientesList(pacientes);
       }
     };
     init();
@@ -87,6 +106,31 @@ const DetalleCita = () => {
   const openPacienteMenu = () => setPacienteVisible(true);
   const closePacienteMenu = () => setPacienteVisible(false);
 
+  const openTimePicker = () => setTimeVisible(true);
+  const onDismissTimePicker = () => setTimeVisible(false);
+  const onConfirmTimePicker = ({ hours, minutes }) => {
+    const updatedDate = new Date(control._formValues.fecha);
+    updatedDate.setHours(hours, minutes);
+    setValue('fecha', updatedDate);
+    onDismissTimePicker();
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      await addDoc(collection(db, 'citas'), {
+        doctor: doc(db, 'usuarios', data.doctor.id),
+        paciente: doc(db, 'pacientes', data.paciente.id),
+        fecha: data.fecha,
+        notas: data.notas,
+      });
+      Alert.alert('', 'Cita guardada exitosamente', [
+        { text: 'OK', onPress: () => router.navigate('/citas') },
+      ]);
+    } catch (error) {
+      Alert.alert('Error al guardar la cita: ' + error.message);
+    }
+  };
+
   return (
     <ScrollView className="flex-1 px-4 sm:px-6 lg:px-8 bg-white">
       <SafeAreaView>
@@ -103,7 +147,7 @@ const DetalleCita = () => {
                   Doctor:{' '}
                   {control._formValues.doctor
                     ? `${control._formValues.doctor?.nombres} ${control._formValues.doctor?.apellidos}`
-                    : ''}
+                    : 'Seleccione un doctor'}
                 </Button>
               }
             >
@@ -132,7 +176,7 @@ const DetalleCita = () => {
                   Paciente:{' '}
                   {control._formValues.paciente
                     ? `${control._formValues.paciente?.nombres} ${control._formValues.paciente?.apellidos}`
-                    : ''}
+                    : 'Seleccione un paciente'}
                 </Button>
               }
             >
@@ -166,7 +210,7 @@ const DetalleCita = () => {
                   name="fecha"
                   render={({ field: { onChange, value } }) => (
                     <DatePickerInput
-                      label="Fecha de Nacimiento"
+                      label="Fecha"
                       value={value}
                       onChange={onChange}
                       locale="es"
@@ -182,16 +226,42 @@ const DetalleCita = () => {
             )}
           </View>
 
+          {!isReadOnly && (
+            <Controller
+              control={control}
+              name="hora"
+              render={() => (
+                <View className="mb-4">
+                  <Button mode="outlined" onPress={openTimePicker}>
+                    {`Hora: ${moment(control._formValues.fecha).format(
+                      'h:mm a'
+                    )}`}
+                  </Button>
+                  <TimePickerModal
+                    visible={timeVisible}
+                    onDismiss={onDismissTimePicker}
+                    onConfirm={onConfirmTimePicker}
+                    hours={new Date(control._formValues.fecha).getHours()}
+                    minutes={new Date(control._formValues.fecha).getMinutes()}
+                    label="Seleccione hora"
+                    cancelLabel="Cancelar"
+                    confirmLabel="Ok"
+                    animationType="fade"
+                  />
+                </View>
+              )}
+            ></Controller>
+          )}
+
           <View className="mb-4">
             <Text>Notas:</Text>
-            {isReadOnly && 
-              <View pointerEvents='none'>
+            {isReadOnly ? (
+              <View pointerEvents="none">
                 <TextInput mode="outlined" multiline={true}>
                   {control._formValues.notas}
                 </TextInput>
               </View>
-            }
-            {!isReadOnly && (
+            ) : (
               <View>
                 <Controller
                   control={control}
@@ -213,6 +283,12 @@ const DetalleCita = () => {
               </View>
             )}
           </View>
+
+          {!isReadOnly && (
+            <Button mode="contained" onPress={handleSubmit(onSubmit)}>
+              Guardar Cita
+            </Button>
+          )}
         </View>
       </SafeAreaView>
     </ScrollView>
