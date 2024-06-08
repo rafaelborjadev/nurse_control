@@ -4,6 +4,7 @@ App dedicada al control de registros especializado de asilos para personas mayor
 Tablero de trabajo: https://trello.com/invite/b/EbLi6EtN/ATTIf042deac82a5d673e00b01b8e5b8665e2164534E/nurse-control
 
 Link de la defensa de fase 2: [DPS Fase 2](https://youtu.be/Aii_0vHDH_A)
+Link de la defensa de fase 3: [DPS Fase 3](https://youtu.be/5dpZ4bWz0IA)
 
 ## Manuales
 - [Manual de usuario](https://github.com/rafaelborjadev/nurse_control/blob/main/DPS%20Nurse%20Control%20manual%20de%20usuario.pdf)
